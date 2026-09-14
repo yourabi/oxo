@@ -1,0 +1,5 @@
+# Oxo pins an exact toolchain for the Pingora edge line. This is a policy
+# baseline to unblock Pingora 0.8.1, not a proven minimum supported version.
+[toolchain]
+channel = "1.96.0"
+components = ["rustfmt", "clippy"]

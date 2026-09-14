@@ -1,0 +1,14 @@
+[package]
+name = "oxo-worker"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Oxo's standalone Linux Magnus worker: strict one-shot HTTP/1.1 over Unix-domain sockets."
+
+[dependencies]
+oxo-core = { path = "../oxo-core" }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+magnus = { version = "0.8", features = ["embed"] }
+libc = "0.2"

@@ -1,0 +1,93 @@
+[package]
+name = "oxo-pingora-edge"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Fail-closed Pingora edge boundary for Oxo's Rack worker hop."
+
+[features]
+default = []
+tls-rustls = ["pingora/rustls", "dep:x509-parser"]
+# M2 (BENCH-ONLY, never in a shipped build): compiles the `/edge-bench` native-floor
+# stub — a canned-response route that skips the worker hop + Ruby entirely so the fixed
+# per-request edge cost (TLS + parse + header-lowering + validate + admit) can be measured.
+# OFF by default: with this feature absent the branch, the canned body, and the boot flag
+# reader literally do not exist in the edge binary (compile-time dead code, not runtime
+# config). Even WITH the feature, the route answers only when OXO_EDGE_NATIVE_BENCH=1.
+edge-bench = []
+# M-A (BENCH-ONLY, never in a shipped build): swaps the global allocator for a counting
+# wrapper around System and exposes the running total on the private admin bind at
+# `/alloc-count`. Tier-1 mechanism gate: allocations/request is asserted as an exact
+# amortized count (a deterministic tripwire), not inferred from a timing profile. OFF by
+# default: without this feature the counter, the allocator, and the admin route do not
+# exist in the binary.
+alloc-count = []
+# M-C (BENCH-ONLY, never in a shipped build): compiles the in-edge wall-clock probes at
+# the four worker-hop seams {checkout, request-write, response-read, checkin} + the private
+# `/hop-timing` admin route that reports per-seam count/sum/mean/log2-histogram. OFF by
+# default: without this feature the `hop_timing` module, the seam probe blocks, and the route
+# do not exist in the binary. Even WITH it, recording is inert unless OXO_HOP_TIMING=1.
+# Captures the OFF-CPU hop wait that task-clock perf is blind to.
+hop-timing = []
+acme = [
+  "dep:instant-acme",
+  "dep:rcgen",
+  "dep:serde_json",
+  "dep:x509-parser",
+  "instant-acme/hyper-rustls",
+  "instant-acme/rcgen",
+  "instant-acme/ring",
+]
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "oxo-pingora-edge"
+path = "src/main.rs"
+
+[[bin]]
+name = "oxo-pingora-service"
+path = "src/service_main.rs"
+
+[dependencies]
+thiserror.workspace = true
+serde_json = { workspace = true, optional = true }
+instant-acme = { version = "0.8.5", default-features = false, optional = true }
+rcgen = { version = "0.14", optional = true }
+x509-parser = { version = "0.18.1", optional = true }
+# All-platform: the cross-platform edge code (should_strip_header, resolve_remote_addr) uses
+# the centralized `is_client_forwarding_header` denylist; oxo-core is cross-platform.
+oxo-core = { path = "../oxo-core" }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2"
+async-trait.workspace = true
+bumpalo = { version = "3", features = ["collections"] }
+bytes.workspace = true
+tokio.workspace = true
+pingora = { workspace = true, features = ["proxy"] }
+# B-1: FuturesUnordered for the consolidated pool-reaper (one supervised task driving
+# all idle-connection watch futures instead of one tokio::spawn per checkin). Already in
+# the lockfile transitively via pingora-core; direct dep is zero version churn.
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+# Static file serving engine + adapter (sibling repo; pingora version pinned equal).
+# Pinned by rev, not branch: the supply-chain gate (deny.toml `[sources] unknown-git`)
+# allowlists exactly this repo, and a rev makes the resolved tree auditable from the
+# manifest alone. Bump by editing the rev, then `cargo update -p crenel -p crenel-pingora`.
+crenel = { git = "https://github.com/yourabi/crenel", rev = "098ecf3b5063f70c7a44e05b7c6af7472da92fab" }
+crenel-pingora = { git = "https://github.com/yourabi/crenel", rev = "098ecf3b5063f70c7a44e05b7c6af7472da92fab" }
+
+# a real HTTP/2 client for the rapid-reset (CVE-2023-44487) behavioral test.
+# Client-side only, so its rustls version is independent of the server's.
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+h2 = "0.3"
+http = "0.2"
+tokio-rustls = "0.24"
+# dangerous_configuration exposes the custom cert verifier for the test-only no-verify path.
+rustls = { version = "0.21", features = ["dangerous_configuration"] }
+# the server's own rustls generation (pingora uses 0.23/ring), renamed so it can sit
+# beside the 0.21 h2-test client. Client-side only; gives handshake_kind(), the clean
+# "was this TLS session resumed" discriminator the resumption-posture test needs.
+rustls023 = { package = "rustls", version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }

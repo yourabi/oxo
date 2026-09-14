@@ -1,0 +1,21 @@
+[package]
+name = "oxo-edge"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Oxo's isolated safe-Rust HTTP/1.1 edge (hyper/tokio) and the SupervisedRubyHandler that spawns + proxies a separate Ruby worker. No Ruby linkage."
+
+[dependencies]
+oxo-core = { path = "../oxo-core" }
+bytes.workspace = true
+getrandom.workspace = true
+tokio.workspace = true
+hyper.workspace = true
+hyper-util.workspace = true
+http-body-util.workspace = true
+
+[dev-dependencies]
+# Integration tests construct a Config directly and drive the server over raw sockets.
+# They spawn a real Ruby worker, so they require `ruby` (+ the `rack` gem) on PATH.
+oxo-core = { path = "../oxo-core" }

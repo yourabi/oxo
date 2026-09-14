@@ -1,0 +1,41 @@
+# private /metrics surface manifest.
+# Format: name type description. The metrics_surface_matches_documentation
+# test compares the first token of each non-comment line to the live /metrics body.
+oxo_edge_in_flight gauge Active downstream requests currently being handled by the edge.
+oxo_edge_draining gauge 1 while the edge is draining, otherwise 0.
+oxo_edge_requests_total counter Total downstream requests admitted to edge handling.
+oxo_edge_responses_total counter Total worker or sidecar responses recorded by the edge.
+oxo_edge_rejections_total counter Total edge-side rejections recorded before a successful upstream response.
+oxo_edge_rate_limited_total counter Total per-identity fairness saturations returned as 503.
+oxo_edge_overload_total counter Total global in-flight overload rejections returned as 503.
+oxo_edge_global_in_flight_active gauge Current process-local global in-flight admissions.
+oxo_edge_global_in_flight_max_active_observed gauge Highest observed process-local global in-flight admissions since boot.
+oxo_edge_global_in_flight_admitted_total counter Total requests admitted through the global in-flight limiter.
+oxo_edge_status_2xx_total counter Total recorded 2xx responses or rejections.
+oxo_edge_status_4xx_total counter Total recorded 4xx responses or rejections.
+oxo_edge_status_5xx_total counter Total recorded 5xx responses or rejections.
+oxo_edge_status_other_total counter Total recorded responses or rejections outside 2xx/4xx/5xx.
+oxo_edge_fairness_enabled gauge 1 when per-identity fairness limiting is enabled, otherwise 0.
+oxo_edge_fairness_in_flight gauge Current in-flight requests tracked by the fairness limiter.
+oxo_edge_fairness_tracked_identities gauge Current number of identities tracked by the fairness limiter.
+oxo_edge_fairness_admitted_total counter Total requests admitted by the fairness limiter.
+oxo_edge_fairness_saturation_total counter Total requests rejected by the fairness limiter.
+oxo_edge_long_lived_active gauge Current long-lived responses admitted by the aggregate registry.
+oxo_edge_long_lived_max_active_observed gauge Highest observed long-lived active count since boot.
+oxo_edge_long_lived_accepted_total counter Total long-lived responses admitted by the aggregate registry.
+oxo_edge_long_lived_completed_total counter Total long-lived responses that completed cleanly.
+oxo_edge_long_lived_drained_total counter Total long-lived responses that completed during edge drain.
+oxo_edge_long_lived_cancelled_total counter Total long-lived responses cancelled by disconnect, timeout, or envelope failure.
+oxo_edge_long_lived_rejected_total counter Total long-lived responses rejected by aggregate admission.
+oxo_edge_long_lived_downstream_timeout_total counter Total long-lived downstream write timeouts.
+oxo_edge_long_lived_bytes_streamed_total counter Total decoded bytes streamed through long-lived responses.
+oxo_edge_static_status_2xx_total counter Total static-serving 2xx responses (crenel engine).
+oxo_edge_static_status_3xx_total counter Total static-serving 3xx responses (directory redirects).
+oxo_edge_static_status_4xx_total counter Total static-serving 4xx responses (rejects and strict-mount misses).
+oxo_edge_static_status_5xx_total counter Total static-serving 5xx responses (faults and sheds).
+oxo_edge_static_bytes_sent_total counter Total static body bytes sent by completed responses.
+oxo_edge_static_io_sheds_total counter Total static requests shed 503 by the file-IO limiter before the header.
+oxo_edge_static_deadline_aborts_total counter Total static responses aborted by the whole-response deadline or write timeout.
+oxo_edge_static_client_aborts_total counter Total static responses aborted by client disconnect mid-body.
+oxo_edge_static_io_faults_total counter Total static filesystem faults (500-class or mid-body truncation aborts).
+oxo_edge_static_root_repins_total counter Total deploy-coupled static docroot re-pins observed.

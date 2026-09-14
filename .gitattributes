@@ -1,0 +1,2 @@
+# Normalize all text to LF in the repo (checked out as-is on Unix; Git handles Windows).
+* text=auto eol=lf

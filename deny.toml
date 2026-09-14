@@ -1,0 +1,37 @@
+[advisories]
+version = 2
+yanked = "deny"
+unused-ignored-advisory = "deny"
+unmaintained = "workspace"
+ignore = [
+  { id = "RUSTSEC-2024-0437", reason = "protobuf 2.28.0 is pulled only through pinned pingora-core 0.8.1 -> prometheus 0.13.4. Oxo does not expose protobuf parsing on its request, worker, ACME, TLS, or protocol surfaces; accepted until a reviewed Pingora/prometheus bump or a supply-chain re-audit." },
+]
+
+[licenses]
+version = 2
+confidence-threshold = 0.8
+allow = [
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "CC0-1.0",
+  "ISC",
+  "MIT",
+  "MPL-2.0",
+  "OpenSSL",
+  "Unicode-3.0",
+  "Zlib",
+]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "allow"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+# The static-serving engine + Pingora adapter (crenel, crenel-pingora) ship from a
+# sibling repo rather than crates.io. Allowlisted by exact URL; the manifest pins a
+# rev, so the resolved tree is auditable without trusting branch movement.
+allow-git = ["https://github.com/yourabi/crenel"]
