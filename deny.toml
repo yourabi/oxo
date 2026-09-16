@@ -31,7 +31,6 @@ wildcards = "allow"
 unknown-registry = "deny"
 unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-# The static-serving engine + Pingora adapter (crenel, crenel-pingora) ship from a
-# sibling repo rather than crates.io. Allowlisted by exact URL; the manifest pins a
-# rev, so the resolved tree is auditable without trusting branch movement.
-allow-git = ["https://github.com/yourabi/crenel"]
+# No git sources: the static-serving engine + Pingora adapter (crenel, crenel-pingora)
+# now come from crates.io like everything else, so nothing needs a git allowlist.
+allow-git = []

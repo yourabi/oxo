@@ -20,6 +20,11 @@ repository = "https://github.com/yourabi/oxo"
 # Shared dependency versions. Crates opt in individually so a non-embedded build
 # never pulls Ruby/FFI crates (rb-sys/magnus live only in oxo-embedded).
 [workspace.dependencies]
+# Internal crates. Path for local builds, version for `cargo publish` (a published
+# dependency must carry a version requirement; cargo drops the `path` on upload).
+oxo-core = { path = "crates/oxo-core", version = "0.1.0" }
+oxo-edge = { path = "crates/oxo-edge", version = "0.1.0" }
+oxo-embedded = { path = "crates/oxo-embedded", version = "0.1.0" }
 async-trait = "0.1"
 bytes = "1"
 getrandom = "0.2"

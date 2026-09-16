@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+repository.workspace = true
 description = "Oxo's seam: the RackHandler trait, Rack request/response types, the Rack-env contract, config (with parse-time guards), and errors. No hyper, no Ruby."
 
 [dependencies]

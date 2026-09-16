@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+repository.workspace = true
 description = "Oxo server binary: 'Puma in Rust'. Wires the safe-Rust edge to the config-selected Rack handler (supervised by default; embedded behind a feature)."
 
 [features]
@@ -13,7 +14,7 @@ default = []
 embedded = ["dep:oxo-embedded", "oxo-embedded/ruby"]
 
 [dependencies]
-oxo-core = { path = "../oxo-core" }
-oxo-edge = { path = "../oxo-edge" }
-oxo-embedded = { path = "../oxo-embedded", optional = true }
+oxo-core.workspace = true
+oxo-edge.workspace = true
+oxo-embedded = { workspace = true, optional = true }
 tokio.workspace = true

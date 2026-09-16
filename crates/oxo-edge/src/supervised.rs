@@ -39,9 +39,9 @@ use tokio::process::{Child, Command};
 use tokio::sync::{watch, Notify};
 use tokio::task::JoinHandle;
 
-const WORKER_RB: &str = include_str!("../../../ruby/oxo_worker.rb");
-const PUMA_CONFIG_RB: &str = include_str!("../../../ruby/oxo_puma_config.rb");
-const PUMA_RACKUP_RU: &str = include_str!("../../../ruby/oxo_puma_rackup.ru");
+const WORKER_RB: &str = include_str!("../ruby/oxo_worker.rb");
+const PUMA_CONFIG_RB: &str = include_str!("../ruby/oxo_puma_config.rb");
+const PUMA_RACKUP_RU: &str = include_str!("../ruby/oxo_puma_rackup.ru");
 
 const SECRET_HEADER: &str = "x-oxo-secret";
 /// `handle()` attempts (initial + retries) so a request crossing a respawn swap rides it.

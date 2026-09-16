@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+repository.workspace = true
 description = "Fail-closed Pingora edge boundary for Oxo's Rack worker hop."
 
 [features]
@@ -59,7 +60,7 @@ rcgen = { version = "0.14", optional = true }
 x509-parser = { version = "0.18.1", optional = true }
 # All-platform: the cross-platform edge code (should_strip_header, resolve_remote_addr) uses
 # the centralized `is_client_forwarding_header` denylist; oxo-core is cross-platform.
-oxo-core = { path = "../oxo-core" }
+oxo-core.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]
 libc = "0.2"
@@ -73,11 +74,12 @@ pingora = { workspace = true, features = ["proxy"] }
 # the lockfile transitively via pingora-core; direct dep is zero version churn.
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
 # Static file serving engine + adapter (sibling repo; pingora version pinned equal).
-# Pinned by rev, not branch: the supply-chain gate (deny.toml `[sources] unknown-git`)
-# allowlists exactly this repo, and a rev makes the resolved tree auditable from the
-# manifest alone. Bump by editing the rev, then `cargo update -p crenel -p crenel-pingora`.
-crenel = { git = "https://github.com/yourabi/crenel", rev = "098ecf3b5063f70c7a44e05b7c6af7472da92fab" }
-crenel-pingora = { git = "https://github.com/yourabi/crenel", rev = "098ecf3b5063f70c7a44e05b7c6af7472da92fab" }
+# From crates.io, not git: a git dependency makes this crate unpublishable, and the
+# registry copies of 0.1.0 were built from rev 098ecf3b (the tree this used to pin).
+# Exact-pinned so the resolved tree stays auditable from the manifest alone; bump by
+# editing the version, then `cargo update -p crenel -p crenel-pingora`.
+crenel = "=0.1.0"
+crenel-pingora = "=0.1.0"
 
 # a real HTTP/2 client for the rapid-reset (CVE-2023-44487) behavioral test.
 # Client-side only, so its rustls version is independent of the server's.

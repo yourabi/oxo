@@ -34,7 +34,7 @@
 # centralized client-forwarding denylist, drop x-oxo-*, reject '_' names). Ported
 # verbatim below; this worker's constructed env must match the native S1 worker
 # binary's env for the same frame bytes.
-# `ruby/oxo_worker.rb` is the legacy -helper and is NOT an env source (its
+# `crates/oxo-edge/ruby/oxo_worker.rb` is the legacy -helper and is NOT an env source (its
 # build_env hardcodes the scheme and omits REMOTE_ADDR); only its Rack-3 body-collection
 # shape is reused.
 #

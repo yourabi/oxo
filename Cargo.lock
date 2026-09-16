@@ -556,7 +556,8 @@ dependencies = [
 [[package]]
 name = "crenel"
 version = "0.1.0"
-source = "git+https://github.com/yourabi/crenel?rev=098ecf3b5063f70c7a44e05b7c6af7472da92fab#098ecf3b5063f70c7a44e05b7c6af7472da92fab"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e66d28fe64e5d5d3d5c4d9d82f3d04ac87ed80d3b3031309261e489c528aee55"
 dependencies = [
  "arc-swap",
  "httpdate",
@@ -566,7 +567,8 @@ dependencies = [
 [[package]]
 name = "crenel-pingora"
 version = "0.1.0"
-source = "git+https://github.com/yourabi/crenel?rev=098ecf3b5063f70c7a44e05b7c6af7472da92fab#098ecf3b5063f70c7a44e05b7c6af7472da92fab"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0190eafb28888d9a05b7dbd44ba63ab0d348c422b99f4f2e8dba519f7c09aca"
 dependencies = [
  "async-trait",
  "bytes",
