@@ -34,9 +34,9 @@
 # centralized client-forwarding denylist, drop x-oxo-*, reject '_' names). Ported
 # verbatim below; this worker's constructed env must match the native S1 worker
 # binary's env for the same frame bytes.
-# `crates/oxo-edge/ruby/oxo_worker.rb` is the legacy -helper and is NOT an env source (its
-# build_env hardcodes the scheme and omits REMOTE_ADDR); only its Rack-3 body-collection
-# shape is reused.
+# `crates/oxo-edge/ruby/oxo_worker.rb` is the legacy -helper and is NOT an env
+# source (its build_env hardcodes the scheme and omits REMOTE_ADDR); only its
+# Rack-3 body-collection shape is reused.
 #
 # Wire format (byte-for-byte with the Rust codec, oxo-core/src/hop_frame.rs):
 #   * prefix (6B): [magic=0xBF | version=0x01 | remaining_length u32-LE]  (hop_frame.rs:40-43,199)
