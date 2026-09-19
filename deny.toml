@@ -15,19 +15,32 @@ allow = [
   "BSD-2-Clause",
   "BSD-3-Clause",
   "CC0-1.0",
-  # webpki-root-certs, reached only under the `acme` feature via
-  # instant-acme -> hyper-rustls -> rustls-platform-verifier. CDLA-Permissive-2.0 is
-  # the Community Data License Agreement, permissive variant -- the license Mozilla's
-  # CA root bundle ships under; it covers that root DATA, not code, and carries no
-  # copyleft or attribution obligation on the binary. Surfaced when the cargo audit
-  # fix let `cargo deny` run for the first time; the dependency itself predates it.
-  "CDLA-Permissive-2.0",
   "ISC",
   "MIT",
   "MPL-2.0",
   "OpenSSL",
   "Unicode-3.0",
   "Zlib",
+]
+
+# Scoped deliberately, rather than added to `allow`: CDLA-Permissive-2.0 is permitted
+# for this one crate only, so a future dependency arriving under it still trips the
+# gate and gets a look.
+#
+# webpki-root-certs carries Mozilla's CA root bundle. It is in NO oxo build:
+# rustls-platform-verifier 0.7 declares it only as a dev-dependency and under
+# `cfg(target_arch = "wasm32")`, and oxo targets no wasm. `cargo tree -i
+# webpki-root-certs` against x86_64-unknown-linux-gnu is empty even with
+# --features tls-rustls,acme. It sits in Cargo.lock only because a lockfile records
+# the union of every platform, and cargo-deny sees it only because no [graph] targets
+# narrows the scan.
+#
+# The license covers root certificate DATA, not code. Section 3.1 ("No Restrictions on
+# Results") rules out copyleft, so it cannot reach oxo's own MIT OR Apache-2.0 terms.
+# Its single obligation -- section 2.1, ship the agreement text when redistributing the
+# Data -- never triggers, because no oxo build contains the Data to redistribute.
+exceptions = [
+  { name = "webpki-root-certs", allow = ["CDLA-Permissive-2.0"] },
 ]
 
 [bans]
