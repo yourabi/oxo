@@ -968,8 +968,9 @@ fn assemble_request_frame_bytes_into(
     // when the post-strip survivor set lacks host AND the request carries an authority.
     let synth_host = if plan.has_host { None } else { authority };
     fn has_x_oxo_prefix(name: &str) -> bool {
+        const PREFIX: &[u8] = b"x-oxo-";
         let b = name.as_bytes();
-        b.len() >= 10 && b[..10].eq_ignore_ascii_case(b"x-oxo-")
+        b.len() >= PREFIX.len() && b[..PREFIX.len()].eq_ignore_ascii_case(PREFIX)
     }
     // The x-oxo skip is the owned builder's allocation-free defence pass. Sanitize
     // already strips the prefix, so in the shipped path it removes nothing; if a sanitize
@@ -1078,8 +1079,9 @@ fn assemble_request_frame_owned(
     // defense-in-depth guard so a future sanitize regression cannot leak identity
     // headers into the worker's Rack env.
     fn has_x_oxo_prefix(name: &str) -> bool {
+        const PREFIX: &[u8] = b"x-oxo-";
         let b = name.as_bytes();
-        b.len() >= 10 && b[..10].eq_ignore_ascii_case(b"x-oxo-")
+        b.len() >= PREFIX.len() && b[..PREFIX.len()].eq_ignore_ascii_case(PREFIX)
     }
     let mut headers = sanitized_headers;
     headers.retain(|(name, _)| !has_x_oxo_prefix(name));
@@ -2374,6 +2376,67 @@ fn is_framing_header(name: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const RESERVED_PREFIX_CASES: &[(&str, bool)] = &[
+        ("x-oxo-", true),
+        ("x-oxo-a", true),
+        ("X-OxO-Request-Id", true),
+        ("x-oxo-remote-addr", true),
+        ("x-oxo", false),
+        ("x-oxox-a", false),
+        ("x-real", false),
+        ("host", false),
+    ];
+
+    #[test]
+    fn frame_builder_rejects_reserved_headers_if_sanitizer_keeps_them() {
+        // Deliberately bypass sanitization: parity between two already-sanitized
+        // pipelines cannot exercise the frame builder's independent guard.
+        let plan = crate::FrameHeaderPlan {
+            keep: [1, 0],
+            survivor_count: 1,
+            has_host: false,
+        };
+        for &(name, reserved) in RESERVED_PREFIX_CASES {
+            let headers = [crate::LoweredHeader::new(name.into(), "value".into())];
+            let result = assemble_request_frame_bytes(
+                "GET",
+                "/",
+                "",
+                None,
+                &headers,
+                &plan,
+                b"",
+                "http",
+                "localhost",
+                80,
+                "127.0.0.1",
+            );
+            if reserved {
+                assert_eq!(result, Err(400), "{name}");
+            } else {
+                assert!(result.is_ok(), "{name}: {result:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn owned_frame_builder_strips_only_reserved_headers() {
+        let metadata = crate::TrustedHopMetadata {
+            remote_addr: "127.0.0.1".into(),
+            url_scheme: "http".into(),
+            server_name: "localhost".into(),
+            server_port: 80,
+            request_id: None,
+        };
+        for &(name, reserved) in RESERVED_PREFIX_CASES {
+            let headers = vec![(name.to_string(), "value".to_string())];
+            let expected = if reserved { vec![] } else { headers.clone() };
+            let frame =
+                assemble_request_frame_owned("GET", "/", "", None, headers, vec![], &metadata);
+            assert_eq!(frame.headers, expected, "{name}");
+        }
+    }
 
     /// W3 LOAD-BEARING PIN: full-frame byte parity, OLD owned pipeline
     /// (sanitize_bare → assemble_request_frame_owned → encode_request) vs NEW borrow

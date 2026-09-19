@@ -298,7 +298,7 @@ WebSocket upgrade with the Action Cable subprotocol, allowed-origin checks,
 fixture cookie gating, subscription confirmation, and channel echo.
 
  adds the public Pingora route for that topology only. A validated H1
-`GET /cable` Upgrade with the `actioncable--json` subprotocol, matching Host,
+`GET /cable` Upgrade with the `actioncable-v1-json` subprotocol, matching Host,
 and FQDN-tied Origin can route to the loopback Cable sidecar. The route strips
 spoofable public-boundary headers, preserves the Action Cable subprotocol and
 ping/pong bytes, uses the aggregate long-lived admission cap, and does not
