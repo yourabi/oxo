@@ -10,8 +10,6 @@ use std::process::{Child, Command, Stdio};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use rustls::client::{ServerCertVerified, ServerCertVerifier};
-use rustls::{Certificate, ClientConfig, ServerName};
 use tokio::net::TcpStream;
 use tokio_rustls::TlsConnector;
 
@@ -147,32 +145,54 @@ fn wait_for_tcp(port: u16) {
 
 // ---- TLS/ALPN-h2 client ----
 
-struct NoVerify;
-impl ServerCertVerifier for NoVerify {
+#[derive(Debug)]
+struct NoVerify(rustls::crypto::CryptoProvider);
+impl rustls::client::danger::ServerCertVerifier for NoVerify {
     fn verify_server_cert(
         &self,
-        _end_entity: &Certificate,
-        _intermediates: &[Certificate],
-        _server_name: &ServerName,
-        _scts: &mut dyn Iterator<Item = &[u8]>,
-        _ocsp: &[u8],
-        _now: std::time::SystemTime,
-    ) -> Result<ServerCertVerified, rustls::Error> {
-        Ok(ServerCertVerified::assertion())
+        _end_entity: &rustls::pki_types::CertificateDer<'_>,
+        _intermediates: &[rustls::pki_types::CertificateDer<'_>],
+        _server_name: &rustls::pki_types::ServerName<'_>,
+        _ocsp_response: &[u8],
+        _now: rustls::pki_types::UnixTime,
+    ) -> Result<rustls::client::danger::ServerCertVerified, rustls::Error> {
+        Ok(rustls::client::danger::ServerCertVerified::assertion())
+    }
+    fn verify_tls12_signature(
+        &self,
+        _message: &[u8],
+        _cert: &rustls::pki_types::CertificateDer<'_>,
+        _dss: &rustls::DigitallySignedStruct,
+    ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+        Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+    }
+    fn verify_tls13_signature(
+        &self,
+        _message: &[u8],
+        _cert: &rustls::pki_types::CertificateDer<'_>,
+        _dss: &rustls::DigitallySignedStruct,
+    ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+        Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+    }
+    fn supported_verify_schemes(&self) -> Vec<rustls::SignatureScheme> {
+        self.0.signature_verification_algorithms.supported_schemes()
     }
 }
 
 async fn tls_h2_connect(port: u16) -> tokio_rustls::client::TlsStream<TcpStream> {
-    let mut config = ClientConfig::builder()
-        .with_safe_defaults()
-        .with_custom_certificate_verifier(Arc::new(NoVerify))
+    let provider = rustls::crypto::ring::default_provider();
+    let mut config = rustls::ClientConfig::builder_with_provider(provider.clone().into())
+        .with_safe_default_protocol_versions()
+        .expect("client protocol versions")
+        .dangerous()
+        .with_custom_certificate_verifier(Arc::new(NoVerify(provider)))
         .with_no_client_auth();
     config.alpn_protocols = vec![b"h2".to_vec()];
     let connector = TlsConnector::from(Arc::new(config));
     let tcp = TcpStream::connect(("127.0.0.1", port))
         .await
         .expect("tcp connect");
-    let server_name = ServerName::try_from("app.test").unwrap();
+    let server_name = rustls::pki_types::ServerName::try_from("app.test").unwrap();
     connector
         .connect(server_name, tcp)
         .await

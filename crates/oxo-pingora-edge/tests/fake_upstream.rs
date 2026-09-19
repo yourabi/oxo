@@ -986,41 +986,41 @@ fn tls_session_resumption_second_handshake_is_resumed() {
     // A no-verify client (self-signed server cert), with rustls's DEFAULT resumption store —
     // deliberately default, because the question is what a stock client gets from our server.
     #[derive(Debug)]
-    struct NoVerify(rustls023::crypto::CryptoProvider);
-    impl rustls023::client::danger::ServerCertVerifier for NoVerify {
+    struct NoVerify(rustls::crypto::CryptoProvider);
+    impl rustls::client::danger::ServerCertVerifier for NoVerify {
         fn verify_server_cert(
             &self,
-            _end_entity: &rustls023::pki_types::CertificateDer<'_>,
-            _intermediates: &[rustls023::pki_types::CertificateDer<'_>],
-            _server_name: &rustls023::pki_types::ServerName<'_>,
+            _end_entity: &rustls::pki_types::CertificateDer<'_>,
+            _intermediates: &[rustls::pki_types::CertificateDer<'_>],
+            _server_name: &rustls::pki_types::ServerName<'_>,
             _ocsp_response: &[u8],
-            _now: rustls023::pki_types::UnixTime,
-        ) -> Result<rustls023::client::danger::ServerCertVerified, rustls023::Error> {
-            Ok(rustls023::client::danger::ServerCertVerified::assertion())
+            _now: rustls::pki_types::UnixTime,
+        ) -> Result<rustls::client::danger::ServerCertVerified, rustls::Error> {
+            Ok(rustls::client::danger::ServerCertVerified::assertion())
         }
         fn verify_tls12_signature(
             &self,
             _message: &[u8],
-            _cert: &rustls023::pki_types::CertificateDer<'_>,
-            _dss: &rustls023::DigitallySignedStruct,
-        ) -> Result<rustls023::client::danger::HandshakeSignatureValid, rustls023::Error> {
-            Ok(rustls023::client::danger::HandshakeSignatureValid::assertion())
+            _cert: &rustls::pki_types::CertificateDer<'_>,
+            _dss: &rustls::DigitallySignedStruct,
+        ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+            Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
         }
         fn verify_tls13_signature(
             &self,
             _message: &[u8],
-            _cert: &rustls023::pki_types::CertificateDer<'_>,
-            _dss: &rustls023::DigitallySignedStruct,
-        ) -> Result<rustls023::client::danger::HandshakeSignatureValid, rustls023::Error> {
-            Ok(rustls023::client::danger::HandshakeSignatureValid::assertion())
+            _cert: &rustls::pki_types::CertificateDer<'_>,
+            _dss: &rustls::DigitallySignedStruct,
+        ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+            Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
         }
-        fn supported_verify_schemes(&self) -> Vec<rustls023::SignatureScheme> {
+        fn supported_verify_schemes(&self) -> Vec<rustls::SignatureScheme> {
             self.0.signature_verification_algorithms.supported_schemes()
         }
     }
 
-    let provider = rustls023::crypto::ring::default_provider();
-    let config = rustls023::ClientConfig::builder_with_provider(provider.clone().into())
+    let provider = rustls::crypto::ring::default_provider();
+    let config = rustls::ClientConfig::builder_with_provider(provider.clone().into())
         .with_safe_default_protocol_versions()
         .expect("client protocol versions")
         .dangerous()
@@ -1031,13 +1031,13 @@ fn tls_session_resumption_second_handshake_is_resumed() {
     // One TLS connect + one HTTP round-trip. The round-trip matters beyond realism: TLS 1.3
     // session tickets arrive as POST-handshake messages, so a client that handshakes and
     // hangs up never stores a session — reading the response is what ingests the tickets.
-    let connect = |cfg: std::sync::Arc<rustls023::ClientConfig>| {
-        let name = rustls023::pki_types::ServerName::try_from("app.test").unwrap();
-        let mut conn = rustls023::ClientConnection::new(cfg, name).expect("client conn");
+    let connect = |cfg: std::sync::Arc<rustls::ClientConfig>| {
+        let name = rustls::pki_types::ServerName::try_from("app.test").unwrap();
+        let mut conn = rustls::ClientConnection::new(cfg, name).expect("client conn");
         let mut tcp = std::net::TcpStream::connect(("127.0.0.1", port)).expect("tcp connect");
         tcp.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
         {
-            let mut tls = rustls023::Stream::new(&mut conn, &mut tcp);
+            let mut tls = rustls::Stream::new(&mut conn, &mut tcp);
             tls.write_all(
                 b"GET /public-smoke-beta HTTP/1.1\r\nHost: app.test\r\nConnection: close\r\n\r\n",
             )
@@ -1064,12 +1064,12 @@ fn tls_session_resumption_second_handshake_is_resumed() {
     let second = connect(config);
     assert_eq!(
         first,
-        Some(rustls023::HandshakeKind::Full),
+        Some(rustls::HandshakeKind::Full),
         "first-contact handshake should be full"
     );
     assert_eq!(
         second,
-        Some(rustls023::HandshakeKind::Resumed),
+        Some(rustls::HandshakeKind::Resumed),
         "the second handshake must RESUME (abbreviated, no cert flight). If this fails after \
          a pingora upgrade, the server stopped sending/accepting session tickets and churn \
          traffic pays full handshakes — see ROADMAP 1b."

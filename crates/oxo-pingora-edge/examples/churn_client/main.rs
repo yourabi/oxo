@@ -3,7 +3,7 @@
 //!
 //! This target is a directory example (`examples/churn_client/main.rs`) rather than a
 //! single file so the Linux-only body can live in a `#[cfg]`-gated module: the driver
-//! needs the `rustls023` dev-dependency, which is target-gated with the rest of the
+//! needs the `rustls` dev-dependency, which is target-gated with the rest of the
 //! Linux-only edge, but Cargo builds every example on every host under `--all-targets`.
 
 #[cfg(target_os = "linux")]

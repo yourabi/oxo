@@ -15,6 +15,13 @@ allow = [
   "BSD-2-Clause",
   "BSD-3-Clause",
   "CC0-1.0",
+  # webpki-root-certs, reached only under the `acme` feature via
+  # instant-acme -> hyper-rustls -> rustls-platform-verifier. CDLA-Permissive-2.0 is
+  # the Community Data License Agreement, permissive variant -- the license Mozilla's
+  # CA root bundle ships under; it covers that root DATA, not code, and carries no
+  # copyleft or attribution obligation on the binary. Surfaced when the cargo audit
+  # fix let `cargo deny` run for the first time; the dependency itself predates it.
+  "CDLA-Permissive-2.0",
   "ISC",
   "MIT",
   "MPL-2.0",

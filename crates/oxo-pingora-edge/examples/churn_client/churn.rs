@@ -15,7 +15,6 @@
 //!
 //! Output: one JSON line on stdout.
 
-use rustls023 as rustls;
 use std::io::{Read, Write};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
