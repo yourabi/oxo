@@ -1,0 +1,56 @@
+[advisories]
+version = 2
+yanked = "deny"
+unused-ignored-advisory = "deny"
+unmaintained = "workspace"
+ignore = [
+  { id = "RUSTSEC-2024-0437", reason = "protobuf 2.28.0 is pulled only through pinned pingora-core 0.8.1 -> prometheus 0.13.4. Oxo does not expose protobuf parsing on its request, worker, ACME, TLS, or protocol surfaces; accepted until a reviewed Pingora/prometheus bump or a supply-chain re-audit." },
+]
+
+[licenses]
+version = 2
+confidence-threshold = 0.8
+allow = [
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "CC0-1.0",
+  "ISC",
+  "MIT",
+  "MPL-2.0",
+  "OpenSSL",
+  "Unicode-3.0",
+  "Zlib",
+]
+
+# Scoped deliberately, rather than added to `allow`: CDLA-Permissive-2.0 is permitted
+# for this one crate only, so a future dependency arriving under it still trips the
+# gate and gets a look.
+#
+# webpki-root-certs carries Mozilla's CA root bundle. It is in NO oxo build:
+# rustls-platform-verifier 0.7 declares it only as a dev-dependency and under
+# `cfg(target_arch = "wasm32")`, and oxo targets no wasm. `cargo tree -i
+# webpki-root-certs` against x86_64-unknown-linux-gnu is empty even with
+# --features tls-rustls,acme. It sits in Cargo.lock only because a lockfile records
+# the union of every platform, and cargo-deny sees it only because no [graph] targets
+# narrows the scan.
+#
+# The license covers root certificate DATA, not code. Section 3.1 ("No Restrictions on
+# Results") rules out copyleft, so it cannot reach oxo's own MIT OR Apache-2.0 terms.
+# Its single obligation -- section 2.1, ship the agreement text when redistributing the
+# Data -- never triggers, because no oxo build contains the Data to redistribute.
+exceptions = [
+  { name = "webpki-root-certs", allow = ["CDLA-Permissive-2.0"] },
+]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "allow"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+# No git sources: the static-serving engine + Pingora adapter (crenel, crenel-pingora)
+# now come from crates.io like everything else, so nothing needs a git allowlist.
+allow-git = []

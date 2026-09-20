@@ -1,0 +1,43 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/oxo-core",
+    "crates/oxo-edge",
+    "crates/oxo-embedded",
+    "crates/oxo-pingora-edge",
+    "crates/oxo-worker",
+    "crates/oxo",
+    "examples/oxo-demos",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.98.1"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/yourabi/oxo"
+
+# Shared dependency versions. Crates opt in individually so a non-embedded build
+# never pulls Ruby/FFI crates (rb-sys/magnus live only in oxo-embedded).
+[workspace.dependencies]
+# Internal crates. Path for local builds, version for `cargo publish` (a published
+# dependency must carry a version requirement; cargo drops the `path` on upload).
+oxo-core = { path = "crates/oxo-core", version = "0.1.0" }
+oxo-edge = { path = "crates/oxo-edge", version = "0.1.0" }
+oxo-embedded = { path = "crates/oxo-embedded", version = "0.1.0" }
+async-trait = "0.1"
+bytes = "1"
+getrandom = "0.2"
+thiserror = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "net", "io-util", "macros", "process", "sync", "time"] }
+hyper = { version = "1", features = ["http1", "server", "client"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+http-body-util = "0.1"
+pingora = { version = "=0.8.1", default-features = false }
+
+# Symbolized-release profile for profiling (perf task-clock + DWARF stacks).
+[profile.profiling]
+inherits = "release"
+debug = true

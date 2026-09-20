@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+ENV["RAILS_ENV"] ||= ENV.fetch("OXO_GRPC_RAILS_ENV", "test")
+ENV["GRUF_USE_DEFAULT_INTERCEPTORS"] ||= "0"
+
+require "bundler/setup"
+require_relative "../config/environment"
+require_relative "../grpc/oxo_fixture"
+
+
+Gruf.use_default_interceptors = false
+Gruf.interceptors.clear
+
+bind = ENV.fetch("OXO_GRPC_BIND")
+server = Gruf::Server.new(hostname: bind)
+server.add_service(OxoGrpc::FixtureService)
+server.start!

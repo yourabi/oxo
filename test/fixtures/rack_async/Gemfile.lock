@@ -1,0 +1,40 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    async (2.43.0)
+      console (~> 1.29)
+      fiber-annotation
+      io-event (~> 1.11)
+    console (1.37.0)
+      fiber-annotation
+      fiber-local (~> 1.1)
+      json
+    fiber-annotation (0.2.0)
+    fiber-local (1.1.0)
+      fiber-storage
+    fiber-storage (1.0.1)
+    io-event (1.19.1)
+    json (2.20.0)
+    rack (3.2.6)
+
+PLATFORMS
+  ruby
+  x86_64-linux
+
+DEPENDENCIES
+  async (~> 2.42)
+  rack (~> 3.2)
+
+CHECKSUMS
+  async (2.43.0)
+  bundler (4.0.13) sha256=19f08be7f27022cf0b89f27da0b044ae075e8270a9ef44ad248a932614e1ca3b
+  console (1.37.0)
+  fiber-annotation (0.2.0)
+  fiber-local (1.1.0)
+  fiber-storage (1.0.1)
+  io-event (1.19.1)
+  json (2.20.0)
+  rack (3.2.6)
+
+BUNDLED WITH
+  4.0.13

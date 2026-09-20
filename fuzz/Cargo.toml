@@ -1,0 +1,33 @@
+[package]
+name = "oxo-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+# Detached from the main workspace (cargo-fuzz needs nightly + libfuzzer; kept off the
+# stable Windows/WSL gate path). Run in WSL: `cargo +nightly fuzz run <target> -- -max_total_time=60`.
+[workspace]
+
+[dependencies]
+libfuzzer-sys = "0.4"
+oxo-core = { path = "../crates/oxo-core" }
+
+[[bin]]
+name = "fuzz_hop_frame_request"
+path = "fuzz_targets/fuzz_hop_frame_request.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_hop_frame_response"
+path = "fuzz_targets/fuzz_hop_frame_response.rs"
+test = false
+doc = false
+bench = false
+
+[profile.release]
+debug = 1

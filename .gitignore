@@ -1,0 +1,11 @@
+/target
+**/*.rs.bk
+*.pdb
+.idea/
+.vscode/
+
+# cargo-fuzz artifacts (targets are committed; lock/corpus/target are generated)
+/fuzz/target
+/fuzz/corpus
+/fuzz/Cargo.lock
+__pycache__/

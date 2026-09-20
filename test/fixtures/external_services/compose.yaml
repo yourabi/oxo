@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_USER: oxo_test
+      POSTGRES_DB: oxo_test
+      POSTGRES_PASSWORD: ${TEST_PASSWORD:?owned runner required}
+    ports:
+      - "127.0.0.1::5432"
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U oxo_test -d oxo_test"]
+      interval: 1s
+      timeout: 2s
+      retries: 30
+  redis:
+    image: redis:7.4.5-alpine
+    command: [redis-server, --save, "", --appendonly, "no"]
+    ports:
+      - "127.0.0.1::6379"
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 1s
+      timeout: 2s
+      retries: 30
+volumes:
+  database:

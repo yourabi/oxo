@@ -1,0 +1,109 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  # Cross-platform tests + the fmt/clippy/doc gates. Ruby (+ rack) is installed
+  # because the shim worker and direct worker smoke spawn real Ruby code.
+  test:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - run: gem install rack -v "~> 3.0"
+      - uses: dtolnay/rust-toolchain@1.98.1
+        with:
+          components: rustfmt, clippy
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: install synthetic integration bundles (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          BUNDLE_GEMFILE="$PWD/test/fixtures/rails_app/Gemfile" BUNDLE_FROZEN=1 bundle install
+          BUNDLE_GEMFILE="$PWD/test/fixtures/rack_async/Gemfile" BUNDLE_FROZEN=1 bundle install
+      - name: Linux workspace including real Rails and Puma
+        if: runner.os == 'Linux'
+        run: ruby test/run.rb workspace
+      - name: async protocol, lifecycle and parity
+        if: runner.os == 'Linux'
+        run: ruby test/run.rb conformance
+      - name: Windows cross-platform suite
+        if: runner.os == 'Windows'
+        run: cargo test --locked --workspace
+      - name: Linux-only integration selection on Windows
+        if: runner.os == 'Windows'
+        run: Write-Output "Rails/Puma, Pingora, TLS/gRPC and external-service tests execute in Linux jobs; they are not selected on Windows."
+      - run: cargo doc --workspace --no-deps
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+
+  # The embedded handler links libruby. On Linux the system Ruby + Rust 1.98.1
+  # toolchain share an ABI, so the embedded feature is runtime-smoked here. The
+  # default (non-embedded) build links no Ruby.
+  embedded-linux:
+    name: embedded runtime smoke (linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - run: gem install rack -v "~> 3.0"
+      - uses: dtolnay/rust-toolchain@1.98.1
+      - run: cargo test -p oxo --features embedded embedded_handler_serves_trivial_rack_app
+
+  tls-integration:
+    name: Rails TLS and gRPC (linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - uses: dtolnay/rust-toolchain@1.98.1
+      - run: BUNDLE_GEMFILE="$PWD/test/fixtures/rails_app/Gemfile" BUNDLE_FROZEN=1 bundle install
+      - run: ruby test/run.rb tls
+
+  external-integration:
+    name: owned PostgreSQL and Redis (linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - uses: dtolnay/rust-toolchain@1.98.1
+      - run: BUNDLE_GEMFILE="$PWD/test/fixtures/rails_app/Gemfile" BUNDLE_FROZEN=1 bundle install
+      - run: ruby test/fixtures/external_services/run.rb
+
+  supply-chain:
+    name: supply chain advisories (linux)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.98.1
+      - name: resolve full Rust feature graph
+        run: cargo tree -p oxo-pingora-edge --features tls-rustls,acme --duplicates
+      - name: cargo audit
+        uses: rustsec/audit-check@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ignore: RUSTSEC-2024-0437
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check

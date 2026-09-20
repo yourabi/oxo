@@ -1,0 +1,74 @@
+[package]
+name = "oxo-pingora-edge"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Fail-closed Pingora edge boundary for Oxo's Rack worker hop."
+
+[features]
+default = []
+tls-rustls = ["pingora/rustls", "dep:x509-parser"]
+# Optional native diagnostic route, excluding the worker and Ruby execution.
+# Disabled by default; even when compiled, requires OXO_EDGE_NATIVE_BENCH=1.
+edge-bench = []
+# Optional System-allocator event counter with a separate /alloc-count admin
+# endpoint. Disabled by default; it counts calls rather than bytes or elapsed time.
+alloc-count = []
+# Optional request-ingest and worker-hop wall-clock probes plus /hop-timing.
+# Disabled by default; recording also requires OXO_HOP_TIMING=1 at runtime.
+hop-timing = []
+acme = [
+  "dep:instant-acme",
+  "dep:rcgen",
+  "dep:serde_json",
+  "dep:x509-parser",
+  "instant-acme/hyper-rustls",
+  "instant-acme/rcgen",
+  "instant-acme/ring",
+]
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "oxo-pingora-edge"
+path = "src/main.rs"
+
+[[bin]]
+name = "oxo-pingora-service"
+path = "src/service_main.rs"
+
+[dependencies]
+thiserror.workspace = true
+serde_json = { workspace = true, optional = true }
+instant-acme = { version = "0.8.5", default-features = false, optional = true }
+rcgen = { version = "0.14", optional = true }
+x509-parser = { version = "0.18.1", optional = true }
+# All-platform: the cross-platform edge code (should_strip_header, resolve_remote_addr) uses
+# the centralized `is_client_forwarding_header` denylist; oxo-core is cross-platform.
+oxo-core.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2"
+async-trait.workspace = true
+bumpalo = { version = "3", features = ["collections"] }
+bytes.workspace = true
+tokio.workspace = true
+pingora = { workspace = true, features = ["proxy"] }
+# FuturesUnordered drives idle-connection watchers in the optional supervised reaper.
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+# Pinned registry versions of the static-serving engine and Pingora adapter.
+# Keep their Pingora dependency compatible with the edge's workspace version.
+crenel = "=0.1.0"
+crenel-pingora = "=0.1.0"
+
+# a real HTTP/2 client for the rapid-reset (CVE-2023-44487) behavioral test.
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+h2 = "0.4"
+http = "1"
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12", "logging"] }
+# Use the server's rustls generation for TLS test clients, including the verifier
+# interfaces and HandshakeKind checks for session resumption.
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }

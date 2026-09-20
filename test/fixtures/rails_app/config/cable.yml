@@ -1,0 +1,10 @@
+development:
+  adapter: <%= ENV.fetch("OXO_CABLE_ADAPTER", "async") %>
+test:
+  adapter: <%= ENV.fetch("OXO_CABLE_ADAPTER", "async") %>
+production:
+  adapter: <%= ENV.fetch("OXO_CABLE_ADAPTER", "async") %>
+production_external:
+  adapter: redis
+  url: <%= ENV["REDIS_URL"] %>
+  channel_prefix: oxo_fixture_external
