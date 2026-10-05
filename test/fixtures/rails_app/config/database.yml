@@ -1,0 +1,4 @@
+production_external:
+  url: <%= ENV["DATABASE_URL"] %>
+  pool: <%= ENV.fetch("OXO_DB_POOL_SIZE", 2) %>
+  checkout_timeout: <%= ENV.fetch("OXO_DB_POOL_TIMEOUT_MS", 250).to_f / 1000.0 %>

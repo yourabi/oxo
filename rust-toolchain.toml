@@ -1,0 +1,4 @@
+# Pinned workspace toolchain; this does not specify a tested minimum compiler version.
+[toolchain]
+channel = "1.98.1"
+components = ["rustfmt", "clippy"]

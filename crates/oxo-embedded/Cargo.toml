@@ -1,0 +1,22 @@
+[package]
+name = "oxo-embedded"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Oxo's in-process Ruby handler (Magnus). All Ruby/libruby linkage is behind the `ruby` feature so the default build links no Ruby at all."
+
+[features]
+default = []
+# Turn on the real in-process handler. Pulls magnus (-> rb-sys -> libruby), so this
+# is the build that links Ruby and requires a matching ABI/toolchain. The binary's
+# own `embedded` feature enables this transitively.
+ruby = ["dep:magnus", "dep:oxo-core", "dep:oxo-edge", "dep:tokio", "dep:bytes"]
+
+[dependencies]
+oxo-core = { workspace = true, optional = true }
+oxo-edge = { workspace = true, optional = true }
+bytes = { workspace = true, optional = true }
+tokio = { workspace = true, optional = true }
+magnus = { version = "0.8", features = ["embed"], optional = true }
